@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset='utf-8' />
+        <title>Mapbox remove style</title>
+        <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+        <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.11.1/mapbox-gl.js'></script>
+        <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.11.1/mapbox-gl.css' rel='stylesheet' />
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+        <style>
+            body { margin:0; padding:0; }
+            #map { position:absolute; top:0; bottom:0; width:100%; }
+            #styles {
+                position: absolute;
+                background: #fff;
+                padding: 10px;
+                font-family: 'Open Sans', sans-serif;
+            }
+            #layers {
+                position: absolute;
+                background: #fff;
+                padding: 10px;
+                top: 5px;
+                right: 5px;
+                bottom: 15px;
+                overflow: auto;
+                font-family: 'Open Sans', sans-serif;
+            }
+        </style>
+    </head>
+    <body>
+        <div id='map'></div>
+        <div id="styles">
+            <input id="streets-v11" type="radio" name="rtoggle" value="streets" />
+            <label for="streets-v11">streets</label>
+            <input id="light-v10" type="radio" name="rtoggle" value="light"  checked="checked" />
+            <label for="light-v10">light</label>
+            <input id="dark-v10" type="radio" name="rtoggle" value="dark" />
+            <label for="dark-v10">dark</label>
+            <input id="outdoors-v11" type="radio" name="rtoggle" value="outdoors" />
+            <label for="outdoors-v11">outdoors</label>
+        </div>
+        <div id="layers">
+        </div>
+        <script>
+            mapboxgl.accessToken = 'pk.eyJ1IjoiZGlhbGxvZXhwbG9yZSIsImEiOiJjamp4dnBvcmY1eGNhM3dteG1pOXo2ZnhnIn0.W-v-5p-6kgc01KLMWuEkzA';
+            var map = new mapboxgl.Map({
+                container: 'map',
+                style: 'mapbox://styles/mapbox/light-v10',
+                zoom: 8,
+                center: [-1.5, 47.2]
+            });
+
+            var styles = document.getElementById('styles');
+            var layers = document.getElementById('layers');
+            var inputs = styles.getElementsByTagName('input');
+
+            function switchStyle(style) {
+                let id = style.target.id;
+                map.setStyle('mapbox://styles/mapbox/' + id);
+            }
+             
+            for (let i = 0; i < inputs.length; i++) {
+                inputs[i].onclick = switchStyle;
+            }
+
+            let disable = [ 
+                "water-shadow", 
+                "tunnel-street-minor-low", 
+                "tunnel-street-minor-case", 
+                "tunnel-primary-secondary-tertiary-case", 
+                "tunnel-major-link-case", 
+                "tunnel-motorway-trunk-case", 
+                "tunnel-construction", 
+                "tunnel-path", 
+                "tunnel-steps", 
+                "tunnel-major-link", 
+                "tunnel-pedestrian", 
+                "tunnel-street-minor", 
+                "tunnel-primary-secondary-tertiary", 
+                "tunnel-motorway-trunk", 
+                "admin-0-boundary-disputed", 
+                "admin-0-boundary-bg", 
+                "admin-1-boundary-bg", 
+                "landcover", 
+                "national-park", 
+                "tunnel-oneway-arrow-blue", 
+                "building-outline", 
+                "building", 
+                "pitch-outline", 
+                "bridge-path-bg", 
+                "bridge-steps-bg", 
+                "hillshade", 
+                "ferry-auto", 
+                "ferry", 
+                "tunnel-oneway-arrow-white", 
+                "bridge-construction", 
+                "aerialway", 
+                "poi-label", 
+                "state-label", 
+                "road-number-shield", 
+                "road-exit-shield", 
+                "tunnel-path-cycleway-piste", 
+                "tunnel-path-smooth-rough", 
+                "natural-line-label", 
+                "natural-point-label", 
+                "water-line-label", 
+                "water-point-label", 
+                "road-oneway-arrow-blue", 
+                "level-crossing", 
+                "road-oneway-arrow-white", 
+                "gate-fence-hedge", 
+                "contour-label", 
+                "settlement-subdivision-label", 
+                "aerialway-bg", 
+                "waterway", 
+                "land-structure-polygon", 
+                "aeroway-polygon", 
+                "land-structure-line", 
+                "road-steps", 
+                "road-path", 
+                "road-construction" 
+            ];
+            map.on('style.load', (e) => {
+                layers.innerHTML = "";
+                for (let i = 0; i < map.getStyle().layers.length; i++) {
+                    let l = map.getStyle().layers[i];
+                    if (disable.indexOf(l.id) !== -1) {
+                        map.setLayoutProperty(l.id, 'visibility', 'none');
+                    }
+
+                    let checkbox = document.createElement("input");
+                    checkbox.type = "checkbox";
+                    checkbox.value = l.id;
+                    checkbox.checked = disable.indexOf(l.id) === -1;
+
+                    let label = document.createElement('label');
+                    label.htmlFor = l.id;
+                    label.appendChild(document.createTextNode(l.id));
+
+                    layers.appendChild(checkbox);
+                    layers.appendChild(label);
+                    layers.appendChild(document.createElement("br"));
+
+                    checkbox.addEventListener('change', (event) => {
+                        if (event.target.checked) {
+                            for(let j = 0; j < disable.length; j++) {
+                                if (disable[j] === l.id) disable.splice(j, 1); 
+                            }
+                            map.setLayoutProperty(l.id, 'visibility', 'visible');
+                        } else {
+                            disable.push(l.id);
+                            map.setLayoutProperty(l.id, 'visibility', 'none');
+                        }
+                    })
+                }
+            })
+        </script>
+
+    </body>
+</html>
